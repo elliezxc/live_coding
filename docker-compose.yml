@@ -1,0 +1,12 @@
+version: '3.7'
+
+services:
+  regression:
+    build: .  # Убираем image, чтобы использовался собранный образ из Dockerfile
+    volumes:
+      - ./:/app  # Меняем на /app (как в WORKDIR Dockerfile)
+    command: /bin/sh -c "pytest -sv --alluredir=allure-results"
+    working_dir: /app  # Меняем на /app
+    environment:
+      - LOGIN=${LOGIN}
+      - PASSWORD=${PASSWORD}
