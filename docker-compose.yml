@@ -1,12 +1,14 @@
-version: '3.7'
+version: "3.9"
 
 services:
   regression:
-    build: .  # Убираем image, чтобы использовался собранный образ из Dockerfile
+    build:
+      context: .   # если docker-compose.yml лежит рядом с Dockerfile
+      dockerfile: Dockerfile
+    user: "${HOST_UID}:${HOST_GID}"
     volumes:
-      - ./:/app  # Меняем на /app (как в WORKDIR Dockerfile)
-    command: /bin/sh -c "pytest -sv --alluredir=allure-results"
-    working_dir: /app  # Меняем на /app
+      - ./:/usr/workspace
+    working_dir: /usr/workspace
     environment:
       - LOGIN=${LOGIN}
       - PASSWORD=${PASSWORD}

@@ -1,33 +1,35 @@
-FROM python:3.9-slim-bullseye
+FROM python:3.12-alpine3.17
 
-# Установка системных зависимостей для Chrome и Selenium
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    wget \
-    curl \
-    unzip \
-    gnupg \
+# Установим системные зависимости
+RUN apk update && apk add --no-cache \
     chromium \
-    chromium-driver \
-    openjdk-11-jre \
-    && rm -rf /var/lib/apt/lists/*
+    chromium-chromedriver \
+    tzdata \
+    openjdk11-jre \
+    curl \
+    tar \
+    gcc \
+    musl-dev \
+    python3-dev \
+    libffi-dev \
+    bash \
+    wget
 
-# Установка Allure
+# Установим allure (репорты)
 RUN curl -o allure-2.13.8.tgz -Ls https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.13.8/allure-commandline-2.13.8.tgz && \
     tar -zxvf allure-2.13.8.tgz -C /opt/ && \
     ln -s /opt/allure-2.13.8/bin/allure /usr/bin/allure && \
     rm allure-2.13.8.tgz
 
-WORKDIR /app
+WORKDIR /usr/workspace
 
-# Копируем зависимости сначала для кэширования
+# Скопируем зависимости
 COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
 
-# Копируем весь код проекта
+# Установим Python-зависимости
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Скопируем остальной проект
 COPY . .
 
-# Переменные окружения для Chrome
-ENV CHROME_BIN=/usr/bin/chromium
-ENV CHROME_DRIVER=/usr/bin/chromedriver
+CMD ["pytest", "-sv", "--alluredir=allure-results"]
